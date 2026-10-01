@@ -1,0 +1,63 @@
+# CI/CD — Despliegue automático a GitHub Pages
+#
+# Flujo: cada push a `main` empaqueta el sitio estático y lo publica en
+# https://edwinq12.github.io/QuirozGarciaEdwinJaziel_DWI_U2/
+#
+# Para cambiar la URL de destino, edita el campo `url` del paso "Resultado".
+
+name: Desplegar a GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:          # permite ejecutarlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: read              # solo lectura sobre el repositorio
+  pages: write                # permiso para publicar
+  id-token: write             # token OIDC para autenticar el despliegue
+
+# Nunca permite dos despliegues simultáneos
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Construir y desplegar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Obtener el código fuente
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: 📦 Preparar el sitio
+        # El proyecto no tiene build: HTML, CSS y JS se publican tal cual.
+        # El archivo .nojekyll evita que GitHub Pages procese con Jekyll los
+        # archivos que empiezan por guion bajo.
+        run: |
+          touch .nojekyll
+          mkdir -p _site
+          for item in * .[!.]*; do
+            [ "$item" = "_site" ] && continue
+            [ "$item" = ".git" ]   && continue
+            cp -R "$item" _site/
+          done
+          echo "--- Contenido que se publicará ---"
+          ls -A _site
+
+      - name: 🚀 Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: "portfolio-site"
+          path: "_site"
+
+      - name: 📡 Publicar en GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: ✅ Resultado
+        run: echo "Publicado en: ${{ steps.deploy.outputs.page_url }}"
