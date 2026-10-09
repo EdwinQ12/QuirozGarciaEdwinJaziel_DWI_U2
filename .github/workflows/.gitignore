@@ -1,0 +1,24 @@
+# Archivos generados por el build
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Node (aunque el proyecto es HTML/CSS/JS puro, por si agregas herramientas)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Entorno
+.env
+.env.local
+
+# Sistema operativo de compilación de documentos
+*.aux
+*.log
